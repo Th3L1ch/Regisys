@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Regisys</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="take_picture">Take picture</string>
+</resources>
