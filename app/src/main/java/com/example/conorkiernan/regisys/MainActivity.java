@@ -380,4 +380,9 @@ public class MainActivity extends Activity {
         }
         textureView.setTransform(matrix);
     }
+
+    private void sendTweet()
+    {
+
+    }
 }
