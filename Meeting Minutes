@@ -1,0 +1,62 @@
+Date: 27th September 2016
+Atended: Conor, Ciara, Barak (Supervisor)
+Minutes taken by: Ciara
+
+  In this meeting we discussed what would be involed in this project and what we neded to look at to get started. The items mentioned were as fllows:
+    -Twitter API
+    -Collect data set
+    -App for picture app
+    -Labelling data
+    -Amazon turk
+    -computer vision alogrithm on device
+    -Privacy
+    -Update data set without udating app
+
+Date: 22nd September 2016
+Atended: Conor, Ciara
+Minutes taken by: Ciara
+
+  First we briefly discussed the components of our project and what needed to be done:
+    -Skeleton app
+    -Implement camera
+    -collect data (time consuming)
+    -GUI
+    -Twitter
+    -Privacy
+    -Terms and conditions
+    -Meet Barak once a week
+    -Document each meeting
+    -Zenhub board
+    
+  Then we broke each component down further and decided who was taking on each task. We also agreed that while we would have tasks designated to an individual, we would go through the taks, with the other individual to ensure they knew how it worked, what was done, and would be able to do it if they needed to themselves.
+  
+    -Permissions:     |
+      -Location       |
+      -Camera         | Conor
+      -Network        |
+      -Storage        |
+      
+    -Splash Screen    |Conor
+    
+    -Camera feed      |Conor
+    
+    -Setings:         |
+      -Login          |Ciara
+      -Change camera  |
+      
+    -Data Set:          |
+      -Collecting data  | Undecided (Ciara??)
+      -Labelling        |
+      
+   -Twitter API:                |
+      -Data sending to twitter  | Ciara
+      -API note limit           |
+      -Search # and test        |
+      
+   -Machine learning                        |Undecided (Ciara?)
+      -read Irish reg (Google open source)  |
+      
+   -Ethics:                   |
+    -Terms and conditions     |Ciara
+    -Know our limiations      |
+
