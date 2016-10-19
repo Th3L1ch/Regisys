@@ -59,4 +59,23 @@ Minutes taken by: Ciara
    -Ethics:                   |
     -Terms and conditions     |Ciara
     -Know our limiations      |
+    
+Date: 11th October 2016
+Atended: Conor, Ciara, Barak
+Minutes taken by: Ciara
+
+  -Discussed report and now know that Conor and I must submit seperate reports
+  -Showed Barak our skeleton app and talked him through it and how it was done
+  -Showed Barak our git reporitory 
+  -discussed takss for following week
+    -Have location of app started
+    
+Date: 18th October 2016
+Atended: Conor, Ciara, Barak
+Minutes taken by: Ciara
+
+  -Discussed location of the app and what had been started and done since last week.
+  -Decided to use both GPS and Network provider in getting the location of the app.
+  -Decided to allow the user to choose the accuracy of the location choosing from "none", "low" or "high" accuracy. This was decided due to legal reasons.
+  -Tasks for the following week were to have the above option for users creeated and to have the task of using the location futher along.
 
