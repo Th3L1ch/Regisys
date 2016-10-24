@@ -7,39 +7,57 @@
         android:minSdkVersion="21"
         android:targetSdkVersion="21" />
 
-    <uses-feature android:name="android.hardware.camera" android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
     <uses-feature android:name="android.hardware.location.gps" />
     <uses-feature android:name="android.hardware.camera2.full" />
+
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <android:uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <android:uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="Regisys"
-        android:theme="@style/AppTheme" >
-
+        android:theme="@style/AppTheme">
         <activity
             android:name=".splash"
-            android:label="Regisys" >
+            android:label="Regisys">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".MainActivity"
-            android:label="Regisys" >
+            android:label="Regisys">
             <intent-filter>
                 <action android:name="com.example.conorkiernan.MAINACTIVITY" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
+            <meta-data
+                android:name="io.fabric.ApiKey"
+                android:value="xxxxxx" />
         </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings" />
+        <activity android:name="com.twitter.sdk.android.core.identity.OAuthActivity">
+        </activity>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="da8db1940f9ede2e3583945203c916d2bc425d25" />
     </application>
 
+    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

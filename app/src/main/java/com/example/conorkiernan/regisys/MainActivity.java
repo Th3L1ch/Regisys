@@ -3,6 +3,7 @@ package com.example.conorkiernan.regisys;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
@@ -19,6 +20,7 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -46,10 +48,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import io.fabric.sdk.android.Fabric;
+
+import com.twitter.sdk.android.core.TwitterAuthConfig;
+import com.twitter.sdk.android.core.TwitterCore;
+import com.twitter.sdk.android.core.TwitterSession;
+import com.twitter.sdk.android.tweetcomposer.ComposerActivity;
+import com.twitter.sdk.android.tweetcomposer.TweetComposer;
+
 
 public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
     private Button takePictureButton;
+    private Button openSettingsButton;
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     static {
@@ -90,6 +101,17 @@ public class MainActivity extends Activity {
                 takePicture();
             }
         });
+
+        openSettingsButton = (Button) findViewById(R.id.btn_openSettings);
+        assert openSettingsButton != null;
+        openSettingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openSettings();
+            }
+        });
+        TwitterAuthConfig authConfig =  new TwitterAuthConfig("consumerKey", "consumerSecret");
+        Fabric.with(this, new TwitterCore(authConfig), new TweetComposer());
     }
     TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
         @Override
@@ -198,7 +220,8 @@ public class MainActivity extends Activity {
             Random rand = new Random();
             int n = rand.nextInt(2000);
             int m = rand.nextInt(2000);
-            final File file = new File(Environment.getExternalStorageDirectory()+"/"+Integer.toString(n)+"pic"+Integer.toString(m)+".jpg");
+            final String filepath = Environment.getExternalStorageDirectory()+"/"+Integer.toString(n)+"pic"+Integer.toString(m)+".jpg";
+            final File file = new File(filepath);
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
                 public void onImageAvailable(ImageReader reader) {
@@ -238,6 +261,7 @@ public class MainActivity extends Activity {
                     super.onCaptureCompleted(session, request, result);
                     Toast.makeText(MainActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
                     createCameraPreview();
+                    sendTweet(filepath);
                 }
             };
             cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
@@ -381,8 +405,21 @@ public class MainActivity extends Activity {
         textureView.setTransform(matrix);
     }
 
-    private void sendTweet()
+    private void openSettings()
     {
-
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
+
+    private void sendTweet(String filePath) {
+        File myImageFile = new File(filePath);
+        Uri myImageUri = Uri.fromFile(myImageFile);
+        TweetComposer.Builder builder = new TweetComposer.Builder(this)
+                .text("Sample Twitter data for RegISys. Location = XXXXXX. .XXXXXX. .Date = XX/XX/XXXX.Time = XX.XX. Sent Via #RegISys")
+                .image(myImageUri);
+        builder.show();
+        onPause();
+        onResume();
+    }
+
 }
