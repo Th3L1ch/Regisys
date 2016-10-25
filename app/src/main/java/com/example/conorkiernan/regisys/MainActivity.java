@@ -3,6 +3,7 @@ package com.example.conorkiernan.regisys;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
@@ -18,6 +19,7 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.location.LocationManager;
 import android.media.Image;
 import android.media.ImageReader;
 import android.net.Uri;
@@ -25,6 +27,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -420,6 +423,45 @@ public class MainActivity extends Activity {
         builder.show();
         onPause();
         onResume();
+    }
+    
+    //access location
+    private boolean checkLocation()
+    {
+        if(!isLocationEnabled())
+            showAlert();
+        return isLocationEnabled();
+    }
+
+    private void showAlert()
+    {
+        final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle("Enable Location")
+                .setMessage("Your Locations Settings is set to 'Off'.\nPlease Enable Location to " +
+                        "use this app")
+                .setPositiveButton("Location Settings", new DialogInterface.OnClickListener()
+                    {
+                    @Override
+                    public void onClick(DialogInterface paramDialogInterface, int paramInt)
+                        {
+                        Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        startActivity(myIntent);
+                        }
+                    })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener()
+                    {
+                    @Override
+                    public void onClick(DialogInterface paramDialogInterface, int paramInt)
+                        {
+                        }
+                    });
+        dialog.show();
+    }
+
+    private boolean isLocationEnabled()
+    {
+        return LocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                LocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
 }
