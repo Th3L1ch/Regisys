@@ -41,6 +41,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -50,6 +51,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 import io.fabric.sdk.android.Fabric;
@@ -86,6 +88,7 @@ public class MainActivity extends Activity {
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
     LocationManager locationManager;
+    String filepath;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -229,7 +232,7 @@ public class MainActivity extends Activity {
             Random rand = new Random();
             int n = rand.nextInt(2000);
             int m = rand.nextInt(2000);
-            final String filepath = Environment.getExternalStorageDirectory()+"/"+Integer.toString(n)+"pic"+Integer.toString(m)+".jpg";
+            filepath = Environment.getExternalStorageDirectory()+"/"+Integer.toString(n)+"pic"+Integer.toString(m)+".jpg";
             final File file = new File(filepath);
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
@@ -270,8 +273,6 @@ public class MainActivity extends Activity {
                     super.onCaptureCompleted(session, request, result);
                     Toast.makeText(MainActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
                     createCameraPreview();
-                    sendTweet(filepath);
-                    onResume();
                 }
             };
             cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
@@ -290,7 +291,15 @@ public class MainActivity extends Activity {
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
+        sendTweet(filepath);
     }
+
+    public void sendTweet(String filepath) {
+        Intent tweetSender = new Intent(this, SendTweetActivity.class);
+        tweetSender.putExtra("filepath", filepath);
+        startActivity(tweetSender);
+    }
+
     protected void createCameraPreview() {
         try {
             SurfaceTexture texture = textureView.getSurfaceTexture();
@@ -421,17 +430,6 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
-    private void sendTweet(String filePath) {
-        File myImageFile = new File(filePath);
-        Uri myImageUri = Uri.fromFile(myImageFile);
-        TweetComposer.Builder builder = new TweetComposer.Builder(this)
-                .text("Sample Twitter data for RegISys. Location = XXXXXX. .XXXXXX. .Date = XX/XX/XXXX.Time = XX.XX. Sent Via #RegISys")
-                .image(myImageUri);
-        builder.show();
-        onPause();
-        onResume();
-    }
-    
     //access location
     private boolean checkLocation()
     {
