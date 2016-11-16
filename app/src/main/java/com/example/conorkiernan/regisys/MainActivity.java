@@ -20,10 +20,12 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.location.Location;
 import android.location.LocationManager;
 import android.media.Image;
 import android.media.ImageReader;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -62,6 +64,8 @@ import com.twitter.sdk.android.core.TwitterSession;
 import com.twitter.sdk.android.tweetcomposer.ComposerActivity;
 import com.twitter.sdk.android.tweetcomposer.TweetComposer;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import android.location.LocationListener;
 
 public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
@@ -87,8 +91,19 @@ public class MainActivity extends Activity {
     private boolean mFlashSupported;
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
-    LocationManager locationManager;
+    private LocationManager locationManager;
+    private LocationListener locationListener;
+    private double latitude;
+    private double longitude;
+    Location loc;
     String filepath;
+
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,7 +114,30 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
 
-        locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        //initialise location manager
+        locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
+        //initialise location listener
+        locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                latitude = location.getLatitude();
+                longitude = location.getLongitude();
+            }
+
+            public void onStatusChanged(String s, int i, Bundle bundle) {
+
+            }
+
+            public void onProviderEnabled(String s) {
+
+            }
+
+            public void onProviderDisabled(String s) {
+
+                Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(i);
+            }
+        };
 
         textureView = (TextureView) findViewById(R.id.texture);
         assert textureView != null;
@@ -123,7 +161,7 @@ public class MainActivity extends Activity {
         });
         TwitterAuthConfig authConfig =  new TwitterAuthConfig("consumerKey", "consumerSecret");
         Fabric.with(this, new TwitterCore(authConfig), new TweetComposer());
-        checkLocation();
+
     }
     TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
         @Override
@@ -295,8 +333,11 @@ public class MainActivity extends Activity {
     }
 
     public void sendTweet(String filepath) {
+        getLocation();
         Intent tweetSender = new Intent(this, SendTweetActivity.class);
         tweetSender.putExtra("filepath", filepath);
+        tweetSender.putExtra("latitude", latitude);
+        tweetSender.putExtra("longitude", longitude);
         startActivity(tweetSender);
     }
 
@@ -430,43 +471,18 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
-    //access location
-    private boolean checkLocation()
-    {
-        if(!isLocationEnabled())
-            showAlert();
-        return isLocationEnabled();
-    }
+    private void getLocation() {
 
-    private void showAlert()
-    {
-        final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle("Enable Location")
-                .setMessage("Your Locations Settings is set to 'Off'.\nPlease Enable Location to " +
-                        "use this app")
-                .setPositiveButton("Location Settings", new DialogInterface.OnClickListener()
-                    {
-                    @Override
-                    public void onClick(DialogInterface paramDialogInterface, int paramInt)
-                        {
-                        Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                        startActivity(myIntent);
-                        }
-                    })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener()
-                    {
-                    @Override
-                    public void onClick(DialogInterface paramDialogInterface, int paramInt)
-                        {
-                        }
-                    });
-        dialog.show();
+        //request location updates
+        //@param(provider,minTime,minDistance,location listener
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.INTERNET
+                }, 10);
+                return;
+            }
+        }
+        locationManager.requestLocationUpdates("gps", 0, 0, locationListener);
     }
-
-    private boolean isLocationEnabled()
-    {
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-    }
-
 }

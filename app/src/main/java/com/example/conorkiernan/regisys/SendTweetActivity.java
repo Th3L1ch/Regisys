@@ -17,10 +17,12 @@ public class SendTweetActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_tweet);
         String filepath = getIntent().getExtras().getString("filepath");
-        sendTweet(filepath);
+        double latitude = getIntent().getExtras().getDouble("latitude");
+        double longitude = getIntent().getExtras().getDouble("longitude");
+        sendTweet(filepath,latitude,longitude);
     }
 
-    private void sendTweet(String filePath) {
+    private void sendTweet(String filePath,double latitude,double longitude) {
         File myImageFile = new File(filePath);
         Uri myImageUri = Uri.fromFile(myImageFile);
 
@@ -31,8 +33,33 @@ public class SendTweetActivity extends Activity {
         String time = c.get(Calendar.HOUR_OF_DAY) + ":"
                 + c.get(Calendar.MINUTE);
 
+        String lastTwo = null;
+        if (time != null && time.length() >= 2) {
+            lastTwo = time.substring(time.length() - 2,time.length());
+        }
+        String timetwo;
+        System.out.println(lastTwo);
+        if(lastTwo.charAt(0)==':')
+        {
+            if(time.charAt(1)==':')
+            {
+                timetwo = time.substring(0,2)+"0"+time.substring(time.length()-1,time.length());
+                System.out.println(timetwo);
+            }
+            else
+            {
+                timetwo = time.substring(0,3)+"0"+time.substring(time.length()-1,time.length());
+                System.out.println(timetwo);
+            }
+        }
+        else
+        {
+            timetwo = time;
+        }
+
+        System.out.println(latitude+"   ********************");
         TweetComposer.Builder builder = new TweetComposer.Builder(this)
-                .text("Sample Twitter data for RegISys.\nLocation: XXXXXX.\nDate: "+date+".\nTime:"+time+".\nSent Via #RegISys")
+                .text("Sample Twitter data for RegISys\nLatitude: "+latitude+"\nLongitude: "+longitude+"\nDate: "+date+"\nTime: "+timetwo+"\nSent Via #RegISys")
                 .image(myImageUri);
         builder.show();
         super.finish();

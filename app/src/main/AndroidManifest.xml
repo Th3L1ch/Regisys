@@ -57,6 +57,9 @@
             android:label="@string/title_activity_settings" />
         <activity android:name="com.twitter.sdk.android.core.identity.OAuthActivity"></activity>
 
+        <meta-data android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="da8db1940f9ede2e3583945203c916d2bc425d25" />
