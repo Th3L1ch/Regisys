@@ -31,8 +31,32 @@ public class SendTweetActivity extends Activity {
         String time = c.get(Calendar.HOUR_OF_DAY) + ":"
                 + c.get(Calendar.MINUTE);
 
+        String lastTwo = null;
+        if (time != null && time.length() >= 2) {
+            lastTwo = time.substring(time.length() - 2,time.length());
+        }
+        String timetwo;
+        System.out.println(lastTwo);
+        if(lastTwo.charAt(0)==':')
+        {
+            if(time.charAt(1)==':')
+            {
+                timetwo = time.substring(0,2)+"0"+time.substring(time.length()-1,time.length());
+                System.out.println(timetwo);
+            }
+            else
+            {
+                timetwo = time.substring(0,3)+"0"+time.substring(time.length()-1,time.length());
+                System.out.println(timetwo);
+            }
+        }
+        else
+        {
+            timetwo = time;
+        }
+
         TweetComposer.Builder builder = new TweetComposer.Builder(this)
-                .text("Sample Twitter data for RegISys.\nLocation: XXXXXX.\nDate: "+date+".\nTime:"+time+".\nSent Via #RegISys")
+                .text("Sample Twitter data for RegISys\nLatitude: \nDate: "+date+"\nTime: "+timetwo+"\nSent Via #RegISys")
                 .image(myImageUri);
         builder.show();
         super.finish();
