@@ -56,7 +56,7 @@ public class SendTweetActivity extends Activity {
         }
 
         TweetComposer.Builder builder = new TweetComposer.Builder(this)
-                .text("Sample Twitter data for RegISys\nLatitude: \nDate: "+date+"\nTime: "+timetwo+"\nSent Via #RegISys")
+                .text("Car Registration: \nLatitude: \nLongitude: \nDate: "+date+"\nTime: "+timetwo+"\nSent Via #RegISys")
                 .image(myImageUri);
         builder.show();
         super.finish();
