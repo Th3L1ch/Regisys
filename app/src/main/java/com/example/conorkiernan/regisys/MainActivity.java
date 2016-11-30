@@ -20,6 +20,8 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.Image;
 import android.media.ImageReader;
@@ -62,6 +64,8 @@ import com.twitter.sdk.android.core.TwitterSession;
 import com.twitter.sdk.android.tweetcomposer.ComposerActivity;
 import com.twitter.sdk.android.tweetcomposer.TweetComposer;
 
+import static android.os.SystemClock.sleep;
+
 
 public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
@@ -88,9 +92,14 @@ public class MainActivity extends Activity {
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
     LocationManager locationManager;
+    private LocationListener listener;
+    private Location location;
     String filepath;
+    double latitude = 0.0;
+    double longitude = 0.0;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -100,6 +109,27 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+
+        listener = new LocationListener()
+        {
+            @Override
+            public void onLocationChanged(Location location) {
+                longitude = location.getLongitude();
+                latitude = location.getLatitude();
+                System.out.println("location changed");
+            }
+            @Override
+            public void onStatusChanged(String s, int i, Bundle bundle) {
+            }
+            @Override
+            public void onProviderEnabled(String s) {
+            }
+            @Override
+            public void onProviderDisabled(String s) {
+                Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(i);
+            }
+        };
 
         textureView = (TextureView) findViewById(R.id.texture);
         assert textureView != null;
@@ -124,6 +154,11 @@ public class MainActivity extends Activity {
         TwitterAuthConfig authConfig =  new TwitterAuthConfig("consumerKey", "consumerSecret");
         Fabric.with(this, new TwitterCore(authConfig), new TweetComposer());
         checkLocation();
+        System.out.println("********");
+        System.out.println(longitude);
+
+        System.out.println("********");
+        System.out.println(longitude);
     }
     TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
         @Override
@@ -291,12 +326,17 @@ public class MainActivity extends Activity {
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-        sendTweet(filepath);
+        //longitude = location.getLongitude();
+        //latitude = location.getLatitude();
+        getLocation();
+        sendTweet(filepath,latitude,longitude);
     }
 
-    public void sendTweet(String filepath) {
+    public void sendTweet(String filepath, double lat, double longi) {
         Intent tweetSender = new Intent(this, SendTweetActivity.class);
         tweetSender.putExtra("filepath", filepath);
+        tweetSender.putExtra("Longitude", longi);
+        tweetSender.putExtra("Latitude", lat);
         startActivity(tweetSender);
     }
 
@@ -340,6 +380,8 @@ public class MainActivity extends Activity {
             // Add permission for camera and let user grant the permission
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION);
+                locationManager.requestLocationUpdates("gps", 1, 0, listener);
+                location = locationManager.getLastKnownLocation("gps");
                 return;
             }
             manager.openCamera(cameraId, stateCallback, null);
@@ -469,4 +511,18 @@ public class MainActivity extends Activity {
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
+    void getLocation(){
+        // first check for permissions
+        System.out.println("-----");
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ) {
+            locationManager.requestLocationUpdates("gps", 1000, 0, listener);
+            sleep(3000);
+            longitude = location.getLongitude();
+            latitude = location.getLatitude();
+            System.out.println("********");
+            System.out.println(longitude);
+            return;
+        }
+        System.out.println("=====");
+    }
 }

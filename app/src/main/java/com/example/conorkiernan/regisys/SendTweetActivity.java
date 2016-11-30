@@ -17,10 +17,12 @@ public class SendTweetActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_tweet);
         String filepath = getIntent().getExtras().getString("filepath");
-        sendTweet(filepath);
+        double longitude = getIntent().getExtras().getDouble("Longitude");
+        double latitude = getIntent().getExtras().getDouble("Latitude");
+        sendTweet(filepath,latitude,longitude);
     }
 
-    private void sendTweet(String filePath) {
+    private void sendTweet(String filePath,double latitude, double longitude) {
         File myImageFile = new File(filePath);
         Uri myImageUri = Uri.fromFile(myImageFile);
 
@@ -56,7 +58,7 @@ public class SendTweetActivity extends Activity {
         }
 
         TweetComposer.Builder builder = new TweetComposer.Builder(this)
-                .text("Car Registration: \nLatitude: \nLongitude: \nDate: "+date+"\nTime: "+timetwo+"\nSent Via #RegISys")
+                .text("Car Registration: \nLatitude: "+latitude+"\nLongitude: "+longitude+"\nDate: "+date+"\nTime: "+timetwo+"\nSent Via #RegISys")
                 .image(myImageUri);
         builder.show();
         super.finish();
