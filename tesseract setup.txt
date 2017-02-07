@@ -1,0 +1,51 @@
+The steps that follow are simple enough to follow, but no-one seems to have explained them well enough. It took me like a week online just searching for how to actully get started with this. I hope this helps --Conor K.
+
+download tess-two from 
+	--https://github.com/rmtheis/tess-two#usage
+
+download the ndk file (either r10 or r12. Not sure which is more suitable yet) from 
+	--https://developer.android.com/ndk/downloads/index.html
+
+download apache ANT(1.10.1) from
+	--https://ant.apache.org/bindownload.cgi
+
+set up necessary path variables
+	--NDK_HOME
+	--ANT_HOME
+	--ANDROID_HOME  <--(optional)
+
+download tess-two-Master
+
+unpack tess-two-master
+
+cd to the tess-two directory
+
+run ndk-build. This can take a while, it took me like 2 hours so we have to be like super patient, and if it doesn't run check the ndk version you're using. I've tried all 5 releases on their site and only 10e and 12b worked for me. I went with 10e because I saw that was the most widely used version.
+
+if ANDROID_HOME hasn't been set , then cd into C:\android\skd\tools and run this command
+	--android.bat update project --path C:\tess-two-master\tess-two-master\tess-two --target 1
+
+otherwise if ANDROID_HOME has been set you can run this command instead (not confirmed, I didn't set ANDROID_HOME)
+	--android update project --path C:\tess-two-master\tess-two-master\tess-two --target 1
+
+cd back to tess-two and run this command
+	--ant release
+
+I've yet to progress past this point, but I will fill in the details once I have. As far as I know though there's only like one or 2 commands left to run. And then we can point android studio to reference here for tesseract. 
+
+
+
+
+
+
+
+
+
+references:
+http://stackoverflow.com/questions/38675799/ndk-compile-warnings-on-ocr-tesseract-libraries-for-android
+https://github.com/rmtheis/tess-two#usage
+https://developer.android.com/ndk/downloads/older_releases.html#tos-header
+https://www.youtube.com/watch?v=Oa5gGS9e3RQ&index=1&list=LLfE5zYJsph88O5_QGyjBRSw&t=188s
+http://stackoverflow.com/questions/10784321/android-update-project-path-command-not-found
+http://gaut.am/making-an-ocr-android-app-using-tesseract/
+https://ant.apache.org/bindownload.cgi
