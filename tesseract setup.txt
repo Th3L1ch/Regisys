@@ -1,7 +1,9 @@
 The steps that follow are simple enough to follow, but no-one seems to have explained them well enough. It took me like a week online just searching for how to actully get started with this. I hope this helps --Conor K.
 
-download tess-two from 
+download tess-two-Master from
 	--https://github.com/rmtheis/tess-two#usage
+
+unpack tess-two-master
 
 download the ndk file (either r10 or r12. Not sure which is more suitable yet) from 
 	--https://developer.android.com/ndk/downloads/index.html
@@ -14,13 +16,11 @@ set up necessary path variables
 	--ANT_HOME
 	--ANDROID_HOME  <--(optional)
 
-download tess-two-Master
-
-unpack tess-two-master
-
 cd to the tess-two directory
 
-run ndk-build. This can take a while, it took me like 2 hours so we have to be like super patient, and if it doesn't run check the ndk version you're using. I've tried all 5 releases on their site and only 10e and 12b worked for me. I went with 10e because I saw that was the most widely used version.
+run ndk-build. This can take a while, it took me like 2 hours so we have to be like super patient,
+and if it doesn't run check the ndk version you're using. I've tried all 5 releases on their site and only 10e and 12b worked for me.
+I went with 10e because I saw that was the most widely used version.
 
 if ANDROID_HOME hasn't been set , then cd into C:\android\skd\tools and run this command
 	--android.bat update project --path C:\tess-two-master\tess-two-master\tess-two --target 1
@@ -31,10 +31,9 @@ otherwise if ANDROID_HOME has been set you can run this command instead (not con
 cd back to tess-two and run this command
 	--ant release
 
-I've yet to progress past this point, but I will fill in the details once I have. As far as I know though there's only like one or 2 commands left to run. And then we can point android studio to reference here for tesseract. 
+This finished the build, now we just have to import this tess-two directory as a library in android studio
 
-
-
+Some minor issues with maven and gradle still exist but they're easily fixed with google.
 
 
 
@@ -45,7 +44,7 @@ references:
 http://stackoverflow.com/questions/38675799/ndk-compile-warnings-on-ocr-tesseract-libraries-for-android
 https://github.com/rmtheis/tess-two#usage
 https://developer.android.com/ndk/downloads/older_releases.html#tos-header
-https://www.youtube.com/watch?v=Oa5gGS9e3RQ&index=1&list=LLfE5zYJsph88O5_QGyjBRSw&t=188s
+https://www.youtube.com/watch?v=Oa5gGS9e3RQ
 http://stackoverflow.com/questions/10784321/android-update-project-path-command-not-found
 http://gaut.am/making-an-ocr-android-app-using-tesseract/
 https://ant.apache.org/bindownload.cgi
