@@ -11,6 +11,8 @@ download the ndk file (either r10 or r12. Not sure which is more suitable yet) f
 download apache ANT(1.10.1) from
 	--https://ant.apache.org/bindownload.cgi
 
+-------------------------------------------------------------------------------------------
+
 set up necessary path variables
 	--NDK_HOME
 	--ANT_HOME

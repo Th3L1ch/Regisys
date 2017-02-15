@@ -44,12 +44,12 @@ public class SendTweetActivity extends Activity {
             if(time.charAt(1)==':')
             {
                 timetwo = time.substring(0,2)+"0"+time.substring(time.length()-1,time.length());
-                System.out.println(timetwo);
+                System.out.println("Timeval: "+timetwo);
             }
             else
             {
                 timetwo = time.substring(0,3)+"0"+time.substring(time.length()-1,time.length());
-                System.out.println(timetwo);
+                System.out.println("Timeval: "+timetwo);
             }
         }
         else
