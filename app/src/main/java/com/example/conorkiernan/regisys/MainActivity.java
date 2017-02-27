@@ -497,14 +497,6 @@ public class MainActivity extends Activity
     }
 
     public void startLocationProcess(){
-        // first check for permissions
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.INTERNET},10);
-            }
-            return;
-        }
-        // this code won't execute IF permissions are not allowed, because in the line above there is return statement.
         locationManager.requestLocationUpdates("network", 1, 0, listener);
     }
 
@@ -514,7 +506,7 @@ public class MainActivity extends Activity
         dialog.setTitle("Enable Location")
                 .setMessage("Your Locations Settings is set to 'Off'.\nPlease Enable Location to " +
                         "use this app")
-                .setPositiveButton("Location Settings", new DialogInterface.OnClickListener()
+                .setPositiveButton("Open Location Settings", new DialogInterface.OnClickListener()
                 {
                     @Override
                     public void onClick(DialogInterface paramDialogInterface, int paramInt)
