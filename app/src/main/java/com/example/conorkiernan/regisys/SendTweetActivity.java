@@ -58,8 +58,7 @@ public class SendTweetActivity extends Activity {
         }
 
         TweetComposer.Builder builder = new TweetComposer.Builder(this)
-                .text("Car Registration: \nLatitude: "+latitude+"\nLongitude: "+longitude+"\nDate: "+date+"\nTime: "+timetwo+"\nSent Via #RegISys")
-                .image(myImageUri);
+                .text("Car Registration: \nLatitude: "+latitude+"\nLongitude: "+longitude+"\nDate: "+date+"\nTime: "+timetwo+"\nSent Via #RegISys");
         builder.show();
         super.finish();
     }
