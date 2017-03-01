@@ -16,15 +16,14 @@ public class SendTweetActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_tweet);
-        String filepath = getIntent().getExtras().getString("filepath");
+        String rString = getIntent().getExtras().getString("resultString");
         double longitude = getIntent().getExtras().getDouble("Longitude");
         double latitude = getIntent().getExtras().getDouble("Latitude");
-        sendTweet(filepath,latitude,longitude);
+        sendTweet(rString,latitude,longitude);
     }
 
-    private void sendTweet(String filePath,double latitude, double longitude) {
-        File myImageFile = new File(filePath);
-        Uri myImageUri = Uri.fromFile(myImageFile);
+    private void sendTweet(String rString,double latitude, double longitude) {
+
 
         Calendar c = Calendar.getInstance();
         String date = c.get(Calendar.DAY_OF_MONTH) + "-"
@@ -58,7 +57,7 @@ public class SendTweetActivity extends Activity {
         }
 
         TweetComposer.Builder builder = new TweetComposer.Builder(this)
-                .text("Car Registration: \nLatitude: "+latitude+"\nLongitude: "+longitude+"\nDate: "+date+"\nTime: "+timetwo+"\nSent Via #RegISys");
+                .text("Car Registration:"+rString+" \nLatitude: "+latitude+"\nLongitude: "+longitude+"\nDate: "+date+"\nTime: "+timetwo+"\nSent Via #RegISys");
         builder.show();
         super.finish();
     }

@@ -9,6 +9,8 @@ import android.content.DialogInterface;
 //Camera imports
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.RectF;
@@ -42,11 +44,14 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -72,15 +77,17 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
-
+//sleep import
 import static android.os.SystemClock.sleep;
 
+//Tesseract Imports
+import com.googlecode.tesseract.android.TessBaseAPI;
 
 public class MainActivity extends Activity
 {
     private static final String TAG = "MainActivity";
-    private Button takePictureButton;
-    private Button openSettingsButton;
+    private ImageButton takePictureButton;
+    private ImageButton openSettingsButton;
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     static {
@@ -98,17 +105,24 @@ public class MainActivity extends Activity
     private ImageReader imageReader;
     private File file;
     private static final int REQUEST_CAMERA_PERMISSION = 200;
-    private boolean mFlashSupported;
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
     String filepath;
+    private Uri mImageUri;
 
     //Location variables
     private LocationManager locationManager;
     private LocationListener listener;
     public double latitude = 0.0;
     public double longitude = 0.0;
-    //end
+
+    //Tesseract Variables
+    private TessBaseAPI tessBaseApi;
+    private static final String lang = "eng";
+    String result = "empty";
+    private static final String DATA_PATH = Environment.getExternalStorageDirectory().toString() + "/TesseractSample/";
+    private static final String TESSDATA = "tessdata";
+    String resultString = "";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState)
@@ -125,7 +139,7 @@ public class MainActivity extends Activity
         textureView = (TextureView) findViewById(R.id.texture);
         assert textureView != null;
         textureView.setSurfaceTextureListener(textureListener);
-        takePictureButton = (Button) findViewById(R.id.btn_takepicture);
+        takePictureButton = (ImageButton) findViewById(R.id.btn_takepicture);
         assert takePictureButton != null;
         takePictureButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,7 +148,7 @@ public class MainActivity extends Activity
             }
         });
 
-        openSettingsButton = (Button) findViewById(R.id.btn_openSettings);
+        openSettingsButton = (ImageButton) findViewById(R.id.btn_openSettings);
         assert openSettingsButton != null;
         openSettingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -285,7 +299,7 @@ public class MainActivity extends Activity
             Random rand = new Random();
             int n = rand.nextInt(2000);
             int m = rand.nextInt(2000);
-            filepath = Environment.getExternalStorageDirectory()+"/"+Integer.toString(n)+"pic"+Integer.toString(m)+".jpg";
+            filepath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/"+Integer.toString(n)+"pic"+Integer.toString(m)+".jpg";
             final File file = new File(filepath);
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
@@ -326,6 +340,9 @@ public class MainActivity extends Activity
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
                     Toast.makeText(MainActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
+                    System.out.println("**********");
+                    mImageUri = Uri.fromFile(file);
+                    System.out.println("##########");
                     createCameraPreview();
                 }
             };
@@ -345,7 +362,9 @@ public class MainActivity extends Activity
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-        sendTweet(filepath,latitude,longitude);
+        doOCR();
+        //sendTweet to go in the last step of doOCR
+
     }
 
     public void sendTweet(String filepath, double lat, double longi) {
@@ -474,6 +493,121 @@ public class MainActivity extends Activity
             matrix.postRotate(90 * (rotation - 2), centerX, centerY);
         }
         textureView.setTransform(matrix);
+    }
+
+    //doOCR
+    private void doOCR() {
+        prepareTesseract();
+        startOCR(mImageUri);
+    }
+
+    private void prepareTesseract() {
+        try {
+            prepareDirectory(DATA_PATH + TESSDATA);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        copyTessDataFiles(TESSDATA);
+    }
+
+    /**
+     * Copy tessdata files (located on assets/tessdata) to destination directory
+     *
+     * @param path - name of directory with .traineddata files
+     */
+    private void copyTessDataFiles(String path) {
+        try {
+            String fileList[] = getAssets().list(path);
+
+            for (String fileName : fileList) {
+
+                // open file within the assets folder
+                // if it is not already there copy it to the sdcard
+                String pathToDataFile = DATA_PATH + path + "/" + fileName;
+                if (!(new File(pathToDataFile)).exists()) {
+
+                    InputStream in = getAssets().open(path + "/" + fileName);
+
+                    OutputStream out = new FileOutputStream(pathToDataFile);
+
+                    // Transfer bytes from in to out
+                    byte[] buf = new byte[1024];
+                    int len;
+
+                    while ((len = in.read(buf)) > 0) {
+                        out.write(buf, 0, len);
+                    }
+                    in.close();
+                    out.close();
+
+                    Log.d(TAG, "Copied " + fileName + "to tessdata");
+                }
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Unable to copy files to tessdata " + e.toString());
+        }
+    }
+
+    private void prepareDirectory(String path) {
+
+        File dir = new File(path);
+        if (!dir.exists()) {
+            if (!dir.mkdirs()) {
+                Log.e(TAG, "ERROR: Creation of directory " + path + " failed, check does Android Manifest have permission to write to external storage.");
+            }
+        } else {
+            Log.i(TAG, "Created directory " + path);
+        }
+    }
+
+
+    private void startOCR(Uri imgUri) {
+        try {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = 4; // 1 - means max size. 4 - means maxsize/4 size. Don't use value <4, because you need more memory in the heap to store your data.
+            Bitmap bitmap = BitmapFactory.decodeFile(imgUri.getPath(), options);
+            System.out.println(imgUri.getPath());
+            result = extractText(bitmap);
+
+            resultString = result;
+
+            sendTweet(resultString,latitude,longitude);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    private String extractText(Bitmap bitmap) {
+        try {
+            tessBaseApi = new TessBaseAPI();
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+            if (tessBaseApi == null) {
+                Log.e(TAG, "TessBaseAPI is null. TessFactory not returning tess object.");
+            }
+        }
+
+        tessBaseApi.init(DATA_PATH, lang);
+
+//       //EXTRA SETTINGS
+//        //For example if we only want to detect numbers
+//        tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST, "1234567890");
+//
+//        //blackList Example
+//        tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_BLACKLIST, "!@#$%^&*()_+=-qwertyuiop[]}{POIU" +
+//                "YTRWQasdASDfghFGHjklJKLl;L:'\"\\|~`xcvXCVbnmBNM,./<>?");
+
+        Log.d(TAG, "Training file loaded");
+        tessBaseApi.setImage(bitmap);
+        String extractedText = "empty result";
+        try {
+            extractedText = tessBaseApi.getUTF8Text();
+        } catch (Exception e) {
+            Log.e(TAG, "Error in recognizing text.");
+        }
+        tessBaseApi.end();
+        return extractedText;
     }
 
     @Override

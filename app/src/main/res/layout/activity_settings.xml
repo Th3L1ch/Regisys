@@ -8,30 +8,8 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="@color/colorPrimary"
     tools:context="com.example.conorkiernan.regisys.SettingsActivity">
-
-
-    <Switch
-        android:text="Send location data in tweets\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:id="@+id/switch1"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
-
-    <Switch
-        android:text="Location type \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:id="@+id/switch2"
-        android:layout_below="@+id/switch1"
-        android:layout_alignStart="@+id/switch1"
-        android:textOn="GPS"
-        android:textOff="Mobile Network"
-        android:checked="false"
-        android:splitTrack="false" />
 
     <com.twitter.sdk.android.core.identity.TwitterLoginButton
         android:id="@+id/twitter_login_button"
