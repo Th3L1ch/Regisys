@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Regisys.iml" filepath="$PROJECT_DIR$/Regisys.iml" />
-      <module fileurl="file://$PROJECT_DIR$/Regisys-master.iml" filepath="$PROJECT_DIR$/Regisys-master.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/tess-two/tess-two.iml" filepath="$PROJECT_DIR$/tess-two/tess-two.iml" />
     </modules>

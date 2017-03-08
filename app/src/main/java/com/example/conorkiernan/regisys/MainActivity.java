@@ -1,5 +1,6 @@
 package com.example.conorkiernan.regisys;
 
+//Base Android imports
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -27,8 +28,6 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.net.Uri;
-
-
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -43,9 +42,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.Toast;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -56,7 +53,6 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
@@ -64,30 +60,33 @@ import java.util.Random;
 import io.fabric.sdk.android.Fabric;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 import com.twitter.sdk.android.core.TwitterCore;
-import com.twitter.sdk.android.core.TwitterSession;
-import com.twitter.sdk.android.tweetcomposer.ComposerActivity;
 import com.twitter.sdk.android.tweetcomposer.TweetComposer;
 
 //Location imports
-import android.os.Build;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 
-//sleep import
-import static android.os.SystemClock.sleep;
+//Regex imports
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 //Tesseract Imports
 import com.googlecode.tesseract.android.TessBaseAPI;
 
+//Main body of code found here
 public class MainActivity extends Activity
 {
+    //used for logging
     private static final String TAG = "MainActivity";
+
     private ImageButton takePictureButton;
     private ImageButton openSettingsButton;
+
+    //Camera Variables
+    //For Camera display
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     static {
@@ -99,7 +98,6 @@ public class MainActivity extends Activity
     private String cameraId;
     protected CameraDevice cameraDevice;
     protected CameraCaptureSession cameraCaptureSessions;
-    protected CaptureRequest captureRequest;
     protected CaptureRequest.Builder captureRequestBuilder;
     private Size imageDimension;
     private ImageReader imageReader;
@@ -108,7 +106,6 @@ public class MainActivity extends Activity
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
     String filepath;
-    private Uri mImageUri;
 
     //Location variables
     private LocationManager locationManager;
@@ -124,21 +121,24 @@ public class MainActivity extends Activity
     private static final String TESSDATA = "tessdata";
     String resultString = "";
 
+
+    //Runs when the activity starts
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-
         //Remove notification bar
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
         setContentView(R.layout.activity_main);
 
+        //Set camera display parameters
         textureView = (TextureView) findViewById(R.id.texture);
         assert textureView != null;
         textureView.setSurfaceTextureListener(textureListener);
+
+        //initialise camera button
         takePictureButton = (ImageButton) findViewById(R.id.btn_takepicture);
         assert takePictureButton != null;
         takePictureButton.setOnClickListener(new View.OnClickListener() {
@@ -148,6 +148,7 @@ public class MainActivity extends Activity
             }
         });
 
+        //Initialise login button
         openSettingsButton = (ImageButton) findViewById(R.id.btn_openSettings);
         assert openSettingsButton != null;
         openSettingsButton.setOnClickListener(new View.OnClickListener() {
@@ -156,6 +157,8 @@ public class MainActivity extends Activity
                 openSettings();
             }
         });
+
+        //Authenticate twitter access
         TwitterAuthConfig authConfig =  new TwitterAuthConfig("consumerKey", "consumerSecret");
         Fabric.with(this, new TwitterCore(authConfig), new TweetComposer());
 
@@ -187,20 +190,27 @@ public class MainActivity extends Activity
     }
     //End of onCreate
 
+    //declare listener for texture view
     TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-            //open your camera here
-
+            //if camera feed is available open the camera and scale image
             openCamera();
             transformImage(width,height);
         }
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-            // Transform you image captured size according to the surface width and height
+            // Transform the image captured size according to the surface width and height
         }
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+            //Mainly used for errors that force the camera to close
+            Log.e(TAG, "onSurfaceTextureDestroyed");
+            if(cameraDevice != null){
+                closeCamera();
+
+                cameraDevice = null;
+            }
             return false;
         }
         @Override
@@ -211,7 +221,7 @@ public class MainActivity extends Activity
     private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
         @Override
         public void onOpened(CameraDevice camera) {
-            //This is called when the camera is open
+            //This is called when the camera is open, creates a preview of the image to be captured
             Log.e(TAG, "onOpened");
             cameraDevice = camera;
             createCameraPreview();
@@ -227,21 +237,14 @@ public class MainActivity extends Activity
         }
     };
 
-    final CameraCaptureSession.CaptureCallback captureCallbackListener = new CameraCaptureSession.CaptureCallback() {
-        @Override
-        public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
-            super.onCaptureCompleted(session, request, result);
-            Toast.makeText(MainActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
-            createCameraPreview();
-        }
-    };
-
+    //Handle camera processes in background
     protected void startBackgroundThread() {
         mBackgroundThread = new HandlerThread("Camera Background");
         mBackgroundThread.start();
         mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
     }
 
+    //Stop background processes
     protected void stopBackgroundThread() {
         mBackgroundThread.quitSafely();
         try {
@@ -253,6 +256,7 @@ public class MainActivity extends Activity
         }
     }
 
+    //capture Image
     protected void takePicture() {
         if(null == cameraDevice) {
             Log.e(TAG, "cameraDevice is null");
@@ -260,6 +264,17 @@ public class MainActivity extends Activity
         }
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
+            /*
+                In general this function just takes the current feed from the camera and builds a request
+                to capture the most current image. It also handles things like:
+                    - The image's orientation
+                    - The image resolution
+                    - The image name
+                    - The path to the image
+
+             */
+
+            //Manager for the camera properties
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraDevice.getId());
             Size[] jpegSizes = null;
             if (characteristics != null) {
@@ -294,13 +309,11 @@ public class MainActivity extends Activity
             result = (360 - result) % 360;
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(result));
 
-
-
-            Random rand = new Random();
-            int n = rand.nextInt(2000);
-            int m = rand.nextInt(2000);
-            filepath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/"+Integer.toString(n)+"pic"+Integer.toString(m)+".jpg";
+            //Name and path to the image
+            filepath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/"+"1786pic1238.jpg";
             final File file = new File(filepath);
+
+            //Verifies an image is available before capturing it, then saves it.
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
                 public void onImageAvailable(ImageReader reader) {
@@ -321,6 +334,7 @@ public class MainActivity extends Activity
                         }
                     }
                 }
+                //Save the image
                 private void save(byte[] bytes) throws IOException {
                     OutputStream output = null;
                     try {
@@ -334,18 +348,18 @@ public class MainActivity extends Activity
                 }
             };
 
+            //Waits for callback on image being saved and creates a toast to relay this to the user.
             reader.setOnImageAvailableListener(readerListener, mBackgroundHandler);
             final CameraCaptureSession.CaptureCallback captureListener = new CameraCaptureSession.CaptureCallback() {
                 @Override
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
                     Toast.makeText(MainActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
-                    System.out.println("**********");
-                    mImageUri = Uri.fromFile(file);
-                    System.out.println("##########");
                     createCameraPreview();
                 }
             };
+
+            //builder for capture session
             cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
                 @Override
                 public void onConfigured(CameraCaptureSession session) {
@@ -355,6 +369,7 @@ public class MainActivity extends Activity
                         e.printStackTrace();
                     }
                 }
+                //If capture fails
                 @Override
                 public void onConfigureFailed(CameraCaptureSession session) {
                 }
@@ -362,20 +377,11 @@ public class MainActivity extends Activity
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-        doOCR();
-        //sendTweet to go in the last step of doOCR
-
+        //text recognition method
+        doOCR(filepath);
     }
 
-    public void sendTweet(String filepath, double lat, double longi) {
-        Intent tweetSender = new Intent(this, SendTweetActivity.class);
-        tweetSender.putExtra("filepath", filepath);
-        tweetSender.putExtra("Longitude", longi);
-        tweetSender.putExtra("Latitude", lat);
-
-        startActivity(tweetSender);
-    }
-
+    // creates the camera preview
     protected void createCameraPreview() {
         try {
             SurfaceTexture texture = textureView.getSurfaceTexture();
@@ -423,7 +429,6 @@ public class MainActivity extends Activity
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-        Log.e(TAG, "openCamera X");
     }
 
     protected void updatePreview() {
@@ -452,7 +457,6 @@ public class MainActivity extends Activity
     @Override
     protected void onResume() {
         super.onResume();
-        Log.e(TAG, "onResume");
         startBackgroundThread();
         if (textureView.isAvailable()) {
 
@@ -465,12 +469,12 @@ public class MainActivity extends Activity
 
     @Override
     protected void onPause() {
-        Log.e(TAG, "onPause");
         closeCamera();
         stopBackgroundThread();
         super.onPause();
     }
 
+    //Alters the image being captured by the camera
     private void transformImage(int width, int height)
     {
         if(imageDimension == null || textureView == null)
@@ -495,12 +499,27 @@ public class MainActivity extends Activity
         textureView.setTransform(matrix);
     }
 
-    //doOCR
-    private void doOCR() {
-        prepareTesseract();
-        startOCR(mImageUri);
+    //builds intent to send the tweet
+    public void sendTweet(String register, double lat, double longi) {
+        Intent tweetSender = new Intent(this, SendTweetActivity.class);
+        tweetSender.putExtra("register", register);
+        tweetSender.putExtra("Longitude", longi);
+        tweetSender.putExtra("Latitude", lat);
+
+        startActivity(tweetSender);
     }
 
+    //Kicks off the text recognition
+    private void doOCR(String filepath) {
+        //Prep the character recognition directory
+        prepareTesseract();
+        //method to get uri from filepath
+        Uri nImageUri = Uri.parse("file://"+Environment.getExternalStorageDirectory().getAbsolutePath()+"/"+"1786pic1238.jpg");
+        //start recognising characters
+        startOCR(nImageUri);
+    }
+
+    //Prep the Tesseract library
     private void prepareTesseract() {
         try {
             prepareDirectory(DATA_PATH + TESSDATA);
@@ -511,24 +530,20 @@ public class MainActivity extends Activity
         copyTessDataFiles(TESSDATA);
     }
 
-    /**
+    /*
      * Copy tessdata files (located on assets/tessdata) to destination directory
-     *
-     * @param path - name of directory with .traineddata files
+     *  path = name of directory with .traineddata files
      */
     private void copyTessDataFiles(String path) {
         try {
             String fileList[] = getAssets().list(path);
 
             for (String fileName : fileList) {
-
                 // open file within the assets folder
                 // if it is not already there copy it to the sdcard
                 String pathToDataFile = DATA_PATH + path + "/" + fileName;
                 if (!(new File(pathToDataFile)).exists()) {
-
                     InputStream in = getAssets().open(path + "/" + fileName);
-
                     OutputStream out = new FileOutputStream(pathToDataFile);
 
                     // Transfer bytes from in to out
@@ -549,8 +564,8 @@ public class MainActivity extends Activity
         }
     }
 
+    //Prep character recognition directory
     private void prepareDirectory(String path) {
-
         File dir = new File(path);
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
@@ -564,20 +579,35 @@ public class MainActivity extends Activity
 
     private void startOCR(Uri imgUri) {
         try {
+            closeCamera();
+            //Set parameters for bitmap creation
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = 4; // 1 - means max size. 4 - means maxsize/4 size. Don't use value <4, because you need more memory in the heap to store your data.
-            Bitmap bitmap = BitmapFactory.decodeFile(imgUri.getPath(), options);
-            System.out.println(imgUri.getPath());
+            //Create bitmap from saved .jpeg file
+            Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(imgUri));
+            //Pull text from image and regex it to extract car license plate data if found, else go to catch clause
             result = extractText(bitmap);
+            System.out.println(result);
+            result.replace('|', '1');
+            result.replace('-', ' ');
+            Pattern regTemplate = Pattern.compile(".*(\\d{2,3})\\S*([A-Z]{1,2})\\S*(\\d{1,10})");
+            Matcher match = regTemplate.matcher(result);
+            String carReg = match.group(0);
 
-            resultString = result;
+            //Export test to String
+            resultString = carReg;
 
+            //Send Tweet with newly found text
             sendTweet(resultString,latitude,longitude);
         } catch (Exception e) {
+            //Something went wrong
             Log.e(TAG, e.getMessage());
+            //Send tweet without register
+            sendTweet("Not Identified.",latitude,longitude);
         }
     }
 
+    //Pull text from image
     private String extractText(Bitmap bitmap) {
         try {
             tessBaseApi = new TessBaseAPI();
@@ -588,15 +618,13 @@ public class MainActivity extends Activity
             }
         }
 
+        //Initialise the Tesseract OCR API
         tessBaseApi.init(DATA_PATH, lang);
 
-//       //EXTRA SETTINGS
-//        //For example if we only want to detect numbers
-//        tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST, "1234567890");
-//
-//        //blackList Example
-//        tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_BLACKLIST, "!@#$%^&*()_+=-qwertyuiop[]}{POIU" +
-//                "YTRWQasdASDfghFGHjklJKLl;L:'\"\\|~`xcvXCVbnmBNM,./<>?");
+        //Whitelisted characters that are allowed to appear
+        //tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST, "1234567890-|ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        //blackList
+        //tessBaseApi.setVariable(TessBaseAPI.VAR_CHAR_BLACKLIST, "!@#$%^&*()_+=[]}{;:'\"\\|~`,./<>?");
 
         Log.d(TAG, "Training file loaded");
         tessBaseApi.setImage(bitmap);
@@ -610,6 +638,7 @@ public class MainActivity extends Activity
         return extractedText;
     }
 
+    //Request permissions for multiple things
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
@@ -630,12 +659,15 @@ public class MainActivity extends Activity
         }
     }
 
+    //Start calling the user's location
     public void startLocationProcess(){
         locationManager.requestLocationUpdates("network", 1, 0, listener);
     }
 
+    //Show alert if the user's location is not enabled
     private void showAlert()
     {
+        //Build a dialogue box to show alert
         final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle("Enable Location")
                 .setMessage("Your Locations Settings is set to 'Off'.\nPlease Enable Location to " +
@@ -659,6 +691,7 @@ public class MainActivity extends Activity
         dialog.show();
     }
 
+    //Open login activity.
     private void openSettings()
     {
         Intent intent = new Intent(this, SettingsActivity.class);

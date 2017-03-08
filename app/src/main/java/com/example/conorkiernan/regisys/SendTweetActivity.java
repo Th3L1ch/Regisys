@@ -16,7 +16,7 @@ public class SendTweetActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_tweet);
-        String rString = getIntent().getExtras().getString("resultString");
+        String rString = getIntent().getExtras().getString("register");
         double longitude = getIntent().getExtras().getDouble("Longitude");
         double latitude = getIntent().getExtras().getDouble("Latitude");
         sendTweet(rString,latitude,longitude);
