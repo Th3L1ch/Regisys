@@ -20,7 +20,7 @@
     will be sent in private messages to keep them safe.
 
 	06/02/17
-	It's been a while since I've updated this. As time went on I got more busy and just forgot to. Here's thje summary of what I've done to date. 
+	It's been a while since I've updated this. As time went on I got more busy and just forgot to. Here's the summary of what I've done to date. 
 	
 	I got the camera application to work without any major errors or bugs.
 	I have the images saved to a folder in the phone and with a random number as the image title. 
@@ -36,8 +36,8 @@
 	I took a break before christmas to start my study early and I took a week off after the tests to relax after a month of little sleep.
 	
 	To Do:
-	1. Finish implementing Tess Two
-	2. Get location Working
-	3. Possibly re-write the entire app from scratch (Not as big a deal as it seems. As long as the independant pieces are working then bringing them all together shouldn't be too hard. Emphasis on the SHOULDN'T)
-	4. Reg-ex the output from Tess-Two and pull license plate data from it.
+	1. Finish implementing Tess Two (done)
+	2. Get location Working (done)
+	3. Possibly re-write the entire app from scratch (Not as big a deal as it seems. As long as the independant pieces are working then bringing them all together shouldn't be too hard. Emphasis on the SHOULDN'T) (done)
+	4. Reg-ex the output from Tess-Two and pull license plate data from it. (in process)
 	
