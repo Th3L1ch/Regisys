@@ -596,7 +596,7 @@ public class MainActivity extends Activity
 
             //Export test to String
             resultString = carReg;
-
+            
             //Send Tweet with newly found text
             sendTweet(resultString,latitude,longitude);
         } catch (Exception e) {

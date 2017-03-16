@@ -1,19 +1,23 @@
 package com.example.conorkiernan.regisys;
 
+//android imports
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+//Twitter imports
 import com.twitter.sdk.android.core.*;
 import com.twitter.sdk.android.core.identity.*;
 
+//Main body of code
 public class SettingsActivity extends Activity {
 
+    //Declare login button
     private TwitterLoginButton loginButton;
 
-
+    //Runs when the activity starts
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,8 +29,6 @@ public class SettingsActivity extends Activity {
                 // The TwitterSession is also available through:
                 // Twitter.getInstance().core.getSessionManager().getActiveSession()
                 TwitterSession session = result.data;
-                // TODO: Remove toast and use the TwitterSession's userID
-                // with your app's user model
                 String msg = "@" + session.getUserName() + " logged in! (#" + session.getUserId() + ")";
                 Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
             }
